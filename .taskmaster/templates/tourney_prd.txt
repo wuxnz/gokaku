@@ -1,0 +1,260 @@
+<context> # Overview This product is a full-featured tournament management platform built on the T3 stack (Next.js, TypeScript, tRPC, Prisma, Tailwind CSS) in the `@/v1` codebase. It empowers organizers to create, host, and moderate tournaments of any size, and enables competitors to join, compete, and track their performance over time. It solves the problem of fragmented tournament administration by centralizing scheduling, matchmaking, result reporting, community engagement, and analytics in a single, extensible web application.
+Core Features
+
+    Tournament CRUD
+
+        What it does: Create, read, update, and delete tournaments.
+
+        Why it’s important: Foundation for all tournament operations.
+
+        How it works: tRPC endpoints backed by Prisma models; admin UI for details (name, size, bracket type, rules, prizes).
+
+    Match Management
+
+        What it does: Automatically generates match pairings, allows score entry, and advances winners.
+
+        Why it’s important: Drives progression of tournaments.
+
+        How it works: Bracket generator service; match CRUD endpoints; real-time status updates via WebSockets.
+
+    Winner & Statistics Tracking
+
+        What it does: Logs winners at each bracket stage; aggregates user stats (wins, losses, top‑2/4/8/16/32 placements).
+
+        Why it’s important: Motivation for participants; powers leaderboards.
+
+        How it works: Event log table; scheduled jobs recalc stats; Prisma views for leaderboards.
+
+    Site Event Logging
+
+        What it does: Records key actions (tournament creation, user join/leave, match results).
+
+        Why it’s important: Auditing, analytics, rollback support.
+
+        How it works: Middleware on tRPC routes writes to EventLog table with timestamps and metadata.
+
+    Community Interactions
+
+        User Posts & Comments: Forum-style threads per tournament; nested comments.
+
+        Tournament Ratings: Star ratings and reviews.
+
+        Why it’s important: Builds engagement, feedback loops.
+
+        How it works: Separate Post, Comment, and Rating models with tRPC mutations, pagination, and moderation flags.
+
+    User Profiles & Stats
+
+        What it does: Displays individual records: total tournaments hosted, moderated, joined; win/loss ratio; top placements.
+
+        Why it’s important: Personal performance tracking, reputation.
+
+        How it works: Prisma relations and computed fields; profile page with charts.
+
+    Notifications & Messaging
+
+        What it does: Alerts via in-app and optional email/push when:
+
+            Tournament starts
+
+            Match assigned
+
+            Match won/lost
+
+            New comments or messages
+
+        Why it’s important: Keeps users informed and engaged.
+
+        How it works: Notification queue service, WebSocket channels, background email worker.
+
+    Browse & Discovery
+
+        Tournament Directory: Filter by status (active, upcoming, completed, cancelled), game type, rating.
+
+        Live Streams & Social Links: Association of tournaments with Twitch/Youtube streams or social media posts.
+
+        Paginated Leaderboard: Sortable by win rate, total wins, tournaments hosted.
+
+    Core Site Pages
+
+        Landing Page: Marketing overview, featured tournaments.
+
+        About Page: Mission, team, contact.
+
+        Create Tournament Wizard: Step‑by‑step UI for setting rules, prizing, scheduling.
+
+        Tournament Detail & Join: Public view; join button for signed‑in users.
+
+        User Directory: List of all users, search by username or stats.
+
+        Notifications Center: In‑app messages and system alerts.
+
+User Experience
+
+    Personas
+
+        Organizer “Alex”: Needs to spin up tournaments fast, manage brackets, distribute prizes.
+
+        Competitor “Jamie”: Seeks easy joining, schedule reminders, performance tracking.
+
+        Spectator “Taylor”: Wants to browse live streams, read comments, and follow tournaments.
+
+    Key User Flows
+
+        Create a Tournament: Log in → Dashboard → “New Tournament” Wizard → Define rules/prizes → Publish.
+
+        Join & Compete: Browse directory → Select tournament → Join → Receive start notification → Play matches → Report results.
+
+        Engage & Review: Post in tournament discussion → Rate the tournament → View updated leaderboard.
+
+    UI/UX Considerations
+
+        Responsive Layout: Tailwind‑powered grid system for mobile and desktop.
+
+        Clear Calls to Action: Prominent buttons for “Join”, “Report Result”, “Create”.
+
+        Real‑Time Feedback: Loading states, WebSocket status badges for live matches.
+
+        Accessibility: ARIA labels, keyboard navigation, contrast‑checked themes.
+        </context>
+
+<PRD> # Technical Architecture - **System Components** - **Frontend**: Next.js pages and React components in `@/v1`; Tailwind CSS. - **API Layer**: tRPC routers with TypeScript types. - **Database**: PostgreSQL with Prisma ORM. - **Real‑Time**: WebSocket server (e.g. Pusher or tRPC‑WS). - **Background Workers**: Node cron jobs or BullMQ for notifications, stats recalculation. - **Email/Push Service**: Integrate with SendGrid or FCM.
+
+    Data Models
+
+        User (id, name, email, role, stats)
+
+        Tournament (id, title, description, size, status, bracketType, prizes, startDate, organizerId)
+
+        Match (id, tournamentId, round, playerAId, playerBId, scoreA, scoreB, status)
+
+        EventLog (id, entity, action, entityId, userId, timestamp, metadata)
+
+        Post/Comment (id, authorId, tournamentId, parentId?, content, createdAt)
+
+        Rating (id, userId, tournamentId, score, comment)
+
+        Notification (id, userId, type, payload, read, createdAt)
+
+    APIs & Integrations
+
+        tRPC Endpoints for CRUD on all models.
+
+        WebSocket Channels for match and notification events.
+
+        Email/Push via provider SDKs.
+
+        OAuth (Discord, Twitch, Google).
+
+    Infrastructure Requirements
+
+        Hosting: Vercel for frontend, Node serverless functions for tRPC.
+
+        Database: Managed PostgreSQL (e.g. Neon, Supabase).
+
+        Worker Queue: Redis + BullMQ on dedicated container.
+
+        CDN: For static assets.
+
+Development Roadmap
+Phase 1: MVP
+
+    User authentication & profiles
+
+    Tournament CRUD & basic list/detail pages
+
+    Match bracket generation & score submission
+
+    Event logging middleware
+
+    In‑app notifications (tournament start, match assignment)
+
+    Landing, About, Dashboard pages
+
+Phase 2: Community & Stats
+
+    Posts & comments under tournaments
+
+    Tournament ratings & reviews
+
+    User statistics aggregation (wins, losses, ratios, top placements)
+
+    Paginated leaderboard
+
+Phase 3: Notifications & Messaging
+
+    Email notifications for key events
+
+    Real‑time WebSocket updates for matches
+
+    In‑app messaging between users
+
+Phase 4: Extensions & Polishing
+
+    OAuth integrations (Discord, Twitch)
+
+    Live‑stream/social media link management
+
+    Advanced filters (game type, region, prize) in directory
+
+    Mobile UX optimizations
+
+    Admin moderation panel
+
+Logical Dependency Chain
+
+    Authentication & User Model (foundation for all actions)
+
+    Tournament CRUD & Listing (visible front‑end)
+
+    Match Generation & Reporting (core tournament flow)
+
+    Event Logging & Notification Stub (backend infrastructure)
+
+    Statistics Aggregation (computed fields)
+
+    Community Features (Posts/Comments)
+
+    Rating & Leaderboard
+
+    Email & Real‑Time Notifications
+
+    Social Integrations & Streaming Links
+
+    Admin & Moderation Tools
+
+Risks and Mitigations
+
+    Complexity of Bracket Logic
+
+        Mitigation: Leverage existing bracket‑generation libraries; write thorough unit tests.
+
+    Scalability of Real‑Time Features
+
+        Mitigation: Use scalable WebSocket provider (e.g. Pusher); include fallbacks.
+
+    Data Integrity in Stats Calculations
+
+        Mitigation: Event‑sourced logging; nightly reconciliation jobs.
+
+    User Engagement
+
+        Mitigation: Gamification (badges, achievements); email/workflow optimization.
+
+    Scope Creep
+
+        Mitigation: Strict MVP definition; prioritize roadmap phases.
+
+Appendix
+
+    Research Findings: User interviews indicated demand for built‑in streaming integration and match reminders.
+
+    Technical Specs:
+
+        PostgreSQL JSONB for flexible metadata (prizing, match settings).
+
+        Rate‑limit tRPC endpoints to prevent abuse.
+
+        Feature flags for phased rollout (e.g. community boards).
+
+</PRD>
