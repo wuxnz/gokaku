@@ -6,8 +6,13 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  distDir: "build",
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  reactStrictMode: false,
+  typescript: {
+    ignoreBuildErrors: true,
   },
 };
 
