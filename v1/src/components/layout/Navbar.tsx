@@ -57,8 +57,8 @@ export function Navbar() {
                 <button className="rounded-full focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-none">
                   <Avatar>
                     <AvatarImage
-                      src={session.user.image || ""}
-                      alt={session.user.name || "User"}
+                      src={session.user.image ?? ""}
+                      alt={session.user.name ?? "User"}
                     />
                     <AvatarFallback>
                       {session.user.name

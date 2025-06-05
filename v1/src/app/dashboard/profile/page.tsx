@@ -121,7 +121,7 @@ function ProfileCard({ user }: { user: User }) {
           {user.image && (
             <img
               src={user.image}
-              alt={user.name || "User"}
+              alt={user.name ?? "User"}
               className="size-20 rounded-full"
             />
           )}

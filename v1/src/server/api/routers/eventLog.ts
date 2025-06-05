@@ -15,7 +15,7 @@ export const eventLogRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const userId = input.userId || (await ensureSystemUser());
+      const userId = input.userId ?? (await ensureSystemUser());
 
       return await db.eventLog.create({
         data: {

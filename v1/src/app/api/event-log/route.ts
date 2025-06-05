@@ -1,5 +1,5 @@
 import { db } from "@/server/db";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { env } from "@/env";
 
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       req,
       secret: env.AUTH_SECRET,
     });
-    const userId = token?.sub || "system";
+    const userId = token?.sub ?? "system";
 
     const event = await db.eventLog.create({
       data: data,

@@ -50,7 +50,7 @@ export function TournamentForm({
 }: TournamentFormProps) {
   const form = useForm<TournamentFormValues>({
     resolver: zodResolver(tournamentFormSchema),
-    defaultValues: defaultValues || {
+    defaultValues: defaultValues ?? {
       name: "",
       size: 8,
       bracketType: "SINGLE_ELIMINATION",
@@ -228,7 +228,7 @@ export function TournamentForm({
                       selected={field.value}
                       onSelect={field.onChange}
                       disabled={(date) =>
-                        date < (form.getValues("startDate") || new Date())
+                        date < (form.getValues("startDate") ?? new Date())
                       }
                       initialFocus
                     />
