@@ -66,19 +66,11 @@ export function TournamentTable({
             <TableCell>{tournament.bracketType}</TableCell>
             <TableCell>{format(tournament.startDate, "MMM d, yyyy")}</TableCell>
             <TableCell>{format(tournament.endDate, "MMM d, yyyy")}</TableCell>
-            <TableCell className="space-x-2">
+            <TableCell>
               <Button asChild size="sm" variant="outline">
                 <Link href={`/dashboard/tournaments/${tournament.id}`}>
-                  Edit
+                  View
                 </Link>
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => deleteMutation.mutate({ id: tournament.id })}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </Button>
             </TableCell>
           </TableRow>

@@ -23,6 +23,21 @@ export default function TournamentDetailPage() {
     },
   });
 
+  const deleteMutation = api.tournament.delete.useMutation({
+    onSuccess: () => {
+      router.push("/dashboard/tournaments");
+    },
+    onError: (error) => {
+      console.error("Failed to delete tournament", error);
+    },
+  });
+
+  const handleDelete = () => {
+    if (confirm("Are you sure you want to delete this tournament?")) {
+      deleteMutation.mutate({ id });
+    }
+  };
+
   const handleJoin = () => {
     if (session?.user?.id) {
       joinMutation.mutate({ tournamentId: id });
@@ -97,12 +112,21 @@ export default function TournamentDetailPage() {
 
       <div className="flex gap-2">
         {isCreator && (
-          <Button
-            onClick={() => router.push(`/dashboard/tournaments/${id}/edit`)}
-            className="text-foreground!"
-          >
-            Edit Tournament
-          </Button>
+          <>
+            <Button
+              onClick={() => router.push(`/dashboard/tournaments/${id}/edit`)}
+              className="text-foreground!"
+            >
+              Edit Tournament
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete Tournament"}
+            </Button>
+          </>
         )}
         {!isCreator && !isParticipant && (
           <Button
