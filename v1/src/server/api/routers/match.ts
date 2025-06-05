@@ -7,7 +7,7 @@ export const matchRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        tournamentId: z.number(),
+        tournamentId: z.string(),
         round: z.number(),
         position: z.number(),
         player1Id: z.string().optional(),
@@ -29,7 +29,7 @@ export const matchRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         player1Score: z.number().optional(),
         player2Score: z.number().optional(),
         winnerId: z.string().optional(),
@@ -56,7 +56,7 @@ export const matchRouter = createTRPCRouter({
     }),
 
   getByTournament: protectedProcedure
-    .input(z.object({ tournamentId: z.number() }))
+    .input(z.object({ tournamentId: z.string() }))
     .query(async ({ input }) => {
       return await db.match.findMany({
         where: { tournamentId: input.tournamentId },
