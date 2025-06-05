@@ -47,12 +47,16 @@ export const tournamentRouter = createTRPCRouter({
   }),
 
   getById: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const tournament = await ctx.db.tournament.findUnique({
         where: { id: input.id },
         include: {
-          participants: true,
+          participants: {
+            include: {
+              user: true,
+            },
+          },
           organizer: true,
         },
       });
@@ -68,7 +72,7 @@ export const tournamentRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string().optional(),
         size: z.number().optional(),
         bracketType: z.string().optional(),
@@ -101,7 +105,7 @@ export const tournamentRouter = createTRPCRouter({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const tournament = await ctx.db.tournament.findUnique({
         where: { id: input.id },
@@ -124,7 +128,7 @@ export const tournamentRouter = createTRPCRouter({
     }),
 
   join: protectedProcedure
-    .input(z.object({ tournamentId: z.number() }))
+    .input(z.object({ tournamentId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       return await ctx.db.tournament.update({
         where: { id: input.tournamentId },
@@ -137,7 +141,7 @@ export const tournamentRouter = createTRPCRouter({
     }),
 
   leave: protectedProcedure
-    .input(z.object({ tournamentId: z.number() }))
+    .input(z.object({ tournamentId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       return await ctx.db.tournament.update({
         where: { id: input.tournamentId },

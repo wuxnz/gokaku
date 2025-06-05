@@ -9,7 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 export default function TournamentDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const id = Number(params.id);
+  const id = params.id ?? "";
   const { data: session } = useSession();
   const utils = api.useUtils();
 
@@ -86,7 +86,7 @@ export default function TournamentDetailPage() {
           {tournament.participants?.length > 0 ? (
             <ul className="list-disc pl-5">
               {tournament.participants.map((participant) => (
-                <li key={participant.id}>{participant.name}</li>
+                <li key={participant.id}>{participant.user.name}</li>
               ))}
             </ul>
           ) : (

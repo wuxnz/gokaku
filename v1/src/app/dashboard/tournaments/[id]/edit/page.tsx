@@ -19,7 +19,7 @@ type TournamentFormValues = {
 export default function EditTournamentPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const id = Number(params.id);
+  const id = params.id;
 
   const { data: tournament, isLoading } = api.tournament.getById.useQuery({
     id,
