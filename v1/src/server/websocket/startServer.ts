@@ -4,7 +4,7 @@ import { clients, broadcastMatchUpdate, broadcastNotification } from "./server";
 const wss = new WebSocketServer({ port: 3001 });
 
 wss.on("connection", (ws) => {
-  console.log("New WebSocket client connected");
+  // consol.log("New WebSocket client connected");
 
   ws.on("message", (message: string) => {
     try {
@@ -15,7 +15,7 @@ wss.on("connection", (ws) => {
           userId: data.userId,
           tournamentId: data.tournamentId,
         });
-        console.log(`Authenticated client: ${data.userId}`);
+        // consol.log(`Authenticated client: ${data.userId}`);
       }
     } catch (err) {
       console.error("Error processing message:", err);
@@ -24,10 +24,10 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     clients.delete(ws);
-    console.log("Client disconnected");
+    // consol.log("Client disconnected");
   });
 });
 
-console.log("WebSocket server running on port 3001");
+// consol.log("WebSocket server running on port 3001");
 
 export { broadcastMatchUpdate, broadcastNotification };
