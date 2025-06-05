@@ -7,13 +7,13 @@ generator client {
 
 datasource db {
     provider = "mongodb"
-    url      = env("DATABASE_URL")
+    url      = "mongodb+srv://softshoes67:w1lld4purVTywU@gokaku.cxlztiu.mongodb.net/gokaku?retryWrites=true&w=majority&appName=Gokaku"
 }
 
 
 model Account {
     id                String  @id @default(auto()) @map("_id") @db.ObjectId
-    userId            String  @db.ObjectId
+    userId            String
     type              String
     provider          String
     providerAccountId String
@@ -32,7 +32,7 @@ model Account {
 model Session {
     id           String   @id @default(auto()) @map("_id") @db.ObjectId
     sessionToken String   @unique
-    userId       String  @db.ObjectId
+    userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -53,7 +53,7 @@ model Post {
     updatedAt DateTime @updatedAt
 
     createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String  @db.ObjectId
+    createdById String
 
     @@index([name])
 }
@@ -68,7 +68,7 @@ model Tournament {
   startDate   DateTime
   endDate     DateTime
   organizer   User     @relation(fields: [organizerId], references: [id], name: "TournamentOrganizers")
-  organizerId String   @db.ObjectId
+  organizerId String
   creatorId   String   // Add creatorId field
   participants TournamentParticipant[]
   matches     Match[]
@@ -88,11 +88,11 @@ model Match {
   round       Int
   position    Int
   player1     User?    @relation("Player1Matches", fields: [player1Id], references: [id])
-  player1Id   String?  @db.ObjectId
+  player1Id   String?
   player2     User?    @relation("Player2Matches", fields: [player2Id], references: [id])
-  player2Id   String?  @db.ObjectId
+  player2Id   String?
   winner      User?    @relation("WinnerMatches", fields: [winnerId], references: [id])
-  winnerId    String?  @db.ObjectId
+  winnerId    String?
   player1Score Int?
   player2Score Int?
   status      MatchStatus @default(SCHEDULED)
@@ -101,7 +101,7 @@ model Match {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(uuid()) @map("_id")
   name          String?
   email         String?   @unique
   emailVerified DateTime?
@@ -122,7 +122,7 @@ model TournamentParticipant {
   tournament   Tournament  @relation(fields: [tournamentId], references: [id])
   tournamentId String      @db.ObjectId
   user         User        @relation(fields: [userId], references: [id], name: "TournamentParticipants")
-  userId       String      @db.ObjectId
+  userId    String
   
   @@unique([tournamentId, userId])
 }
@@ -132,7 +132,7 @@ model EventLog {
   action    String
   entity    String
   entityId  String
-  userId    String   @db.ObjectId
+  userId    String
   user      User     @relation(fields: [userId], references: [id])
   details   Json?
   createdAt DateTime @default(now())
