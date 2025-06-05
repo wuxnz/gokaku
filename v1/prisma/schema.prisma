@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
     provider = "mongodb"
-    url      = "mongodb+srv://softshoes67:w1lld4purVTywU@gokaku.cxlztiu.mongodb.net/gokaku?retryWrites=true&w=majority&appName=Gokaku"
+    url      = env("DATABASE_URL")
 }
 
 
