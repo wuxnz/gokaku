@@ -130,12 +130,10 @@ export const tournamentRouter = createTRPCRouter({
   join: protectedProcedure
     .input(z.object({ tournamentId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      return await ctx.db.tournament.update({
-        where: { id: input.tournamentId },
+      return await ctx.db.tournamentParticipant.create({
         data: {
-          participants: {
-            connect: { id: ctx.session.user.id },
-          },
+          tournament: { connect: { id: input.tournamentId } },
+          user: { connect: { id: ctx.session.user.id } },
         },
       });
     }),
