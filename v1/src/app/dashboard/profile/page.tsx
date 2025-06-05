@@ -67,13 +67,9 @@ export default async function ProfilePage() {
   // Fetch actual stats from database
   const [tournamentsJoined, matchesWon, tournamentsOrganized] =
     await Promise.all([
-      db.tournament.count({
+      db.tournamentParticipant.count({
         where: {
-          participants: {
-            some: {
-              id: user.id,
-            },
-          },
+          userId: user.id,
         },
       }),
       db.match.count({
