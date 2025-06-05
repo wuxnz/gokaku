@@ -34,7 +34,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   if (
     !session ||
     (!session.user &&
-      (await headers()).get("referer") !== "http://localhost:3000")
+      (await headers()).get("referer") !== "https://gokaku.vercel.app")
   ) {
     redirect("/login");
   }
@@ -112,7 +112,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
   const result = await next();
 
   const end = Date.now();
-  // consol.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+  console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
 
   return result;
 });
