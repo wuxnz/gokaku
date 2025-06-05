@@ -29,7 +29,12 @@ export async function eventLoggerMiddleware(req: NextRequest) {
       req,
       secret: env.NEXTAUTH_SECRET,
     });
-    const userId = token?.sub ?? "system";
+
+    if (!token) {
+      return response;
+    }
+
+    const userId = token?.sub;
     const action = req.method;
     const entity = req.nextUrl.pathname.split("/")[1] ?? "unknown";
     const entityId = req.nextUrl.pathname.split("/")[2] ?? "unknown";

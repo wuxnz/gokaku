@@ -11,7 +11,12 @@ export async function POST(req: NextRequest) {
       req,
       secret: env.AUTH_SECRET,
     });
-    const userId = token?.sub ?? "system";
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = token?.sub;
 
     const event = await db.eventLog.create({
       data: data,
