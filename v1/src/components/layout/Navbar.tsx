@@ -80,9 +80,12 @@ export function Navbar() {
             </DropdownMenu>
           </>
         ) : (
-          <Button asChild variant="ghost">
-            <Link href="/login">Sign In</Link>
-          </Button>
+          <>
+            <ThemeToggle />
+            <Button asChild variant="ghost">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </>
         )}
       </div>
     </nav>
