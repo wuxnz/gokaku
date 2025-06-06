@@ -158,7 +158,7 @@ export default function TournamentDetailPage() {
               )}
             <Button
               onClick={() => router.push(`/dashboard/tournaments/${id}/edit`)}
-              className="text-foreground!"
+              className="text-foreground! bg-secondary"
             >
               Edit Tournament
             </Button>
