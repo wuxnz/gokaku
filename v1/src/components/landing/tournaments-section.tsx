@@ -1,45 +1,52 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/trpc/react";
+import { format } from "date-fns";
+import type { RouterOutputs } from "@/trpc/react";
 
 export function TournamentsSection() {
-  // Mock data - in real app this would come from API
-  const tournaments = [
-    {
-      id: 1,
-      name: "Summer Championship",
-      date: "June 15-18, 2025",
-      prize: "$10,000",
-      participants: 32,
-      game: "Valorant",
-      status: "Upcoming",
-    },
-    {
-      id: 2,
-      name: "Spring Invitational",
-      date: "May 20-22, 2025",
-      prize: "$5,000",
-      participants: 16,
-      game: "League of Legends",
-      status: "Ongoing",
-    },
-    {
-      id: 3,
-      name: "Winter Clash",
-      date: "December 10-12, 2025",
-      prize: "$7,500",
-      participants: 24,
-      game: "CS:GO",
-      status: "Upcoming",
-    },
-  ];
+  const { data: tournaments, isLoading } = api.tournament.getAll.useQuery();
+
+  if (isLoading) return null;
+  if (!tournaments || tournaments.length === 0) return null;
+
+  type Tournament = RouterOutputs["tournament"]["getAll"][number];
+
+  // Sort by startDate descending and take the latest 3
+  const latestTournaments = [...tournaments]
+    .sort(
+      (a, b) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+    )
+    .slice(0, 3);
 
   const statusVariants = {
     Upcoming: "bg-blue-500",
     Ongoing: "bg-green-500",
     Completed: "bg-gray-500",
   };
+
+  // Helper to get status
+  function getStatus(tournament: Tournament) {
+    const now = new Date();
+    if (new Date(tournament.startDate) > now) return "Upcoming";
+    if (new Date(tournament.endDate) < now) return "Completed";
+    return "Ongoing";
+  }
+
+  // Helper to format date range
+  function formatDateRange(start: Date | string, end: Date | string) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (startDate.toDateString() === endDate.toDateString()) {
+      return format(startDate, "MMMM d, yyyy");
+    }
+    return `${format(startDate, "MMMM d, yyyy")} - ${format(endDate, "MMMM d, yyyy")}`;
+  }
 
   return (
     <section>
@@ -53,13 +60,13 @@ export function TournamentsSection() {
               Join the competition in these exciting upcoming events
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="text-foreground">
             <Link href="/dashboard/tournaments">View All</Link>
           </Button>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {tournaments.map((tournament) => (
+          {latestTournaments.map((tournament) => (
             <Card
               key={tournament.id}
               className="transition-shadow hover:shadow-lg"
@@ -70,11 +77,11 @@ export function TournamentsSection() {
                   <Badge
                     className={
                       statusVariants[
-                        tournament.status as keyof typeof statusVariants
+                        getStatus(tournament) as keyof typeof statusVariants
                       ]
                     }
                   >
-                    {tournament.status}
+                    {getStatus(tournament)}
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -84,13 +91,20 @@ export function TournamentsSection() {
                     <span className="text-gray-500 dark:text-gray-400">
                       Game:
                     </span>
-                    <span className="font-medium">{tournament.game}</span>
+                    <span className="font-medium">
+                      {tournament.bracketType}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">
                       Date:
                     </span>
-                    <span className="font-medium">{tournament.date}</span>
+                    <span className="font-medium">
+                      {formatDateRange(
+                        tournament.startDate,
+                        tournament.endDate,
+                      )}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">
@@ -103,10 +117,10 @@ export function TournamentsSection() {
                       Participants:
                     </span>
                     <span className="font-medium">
-                      {tournament.participants}
+                      {tournament.participants?.length ?? 0}
                     </span>
                   </div>
-                  <Button asChild className="mt-4 w-full">
+                  <Button asChild className="text-foreground mt-4 w-full">
                     <Link href={`/dashboard/tournaments/${tournament.id}`}>
                       View Details
                     </Link>

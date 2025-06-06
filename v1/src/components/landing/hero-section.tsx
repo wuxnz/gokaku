@@ -5,7 +5,7 @@ import { BackgroundBeams } from "../ui/background-beams";
 export function HeroSection() {
   return (
     <section className="relative flex h-[calc(100vh-4rem)] w-full items-center justify-center rounded-md bg-neutral-950 antialiased">
-      <div className="container mx-auto px-4 text-center">
+      <div className="z-10 container mx-auto px-4 text-center">
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-6 text-4xl font-bold md:text-6xl">
             Create, Compete, Conquer
