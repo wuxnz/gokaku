@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/trpc/react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
+import { Bracket } from "@/components/Bracket";
+import { useState } from "react";
+import React from "react";
 
 export default function TournamentDetailPage() {
   const router = useRouter();
@@ -12,6 +15,7 @@ export default function TournamentDetailPage() {
   const id = params.id ?? "";
   const { data: session } = useSession();
   const utils = api.useUtils();
+  const [bracketError, setBracketError] = useState<string | null>(null);
 
   const { data: tournament, isLoading } = api.tournament.getById.useQuery({
     id,
@@ -30,6 +34,33 @@ export default function TournamentDetailPage() {
     onError: (error) => {
       console.error("Failed to delete tournament", error);
     },
+  });
+
+  // Fetch matches if tournament is started
+  const {
+    data: matches,
+    isLoading: matchesLoading,
+    refetch: refetchMatches,
+  } = api.match.getByTournament.useQuery(
+    { tournamentId: id },
+    { enabled: !!tournament && !!(tournament as any).started },
+  );
+
+  const startMutation = api.tournament.start.useMutation({
+    onSuccess: () => {
+      utils.tournament.getById.invalidate({ id });
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
+  });
+
+  const advanceWinnerMutation = api.match.update.useMutation({
+    onSuccess: () => {
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
   });
 
   const handleDelete = () => {
@@ -126,6 +157,17 @@ export default function TournamentDetailPage() {
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete Tournament"}
             </Button>
+            {/* Start Tournament Button */}
+            {!(tournament as any).started &&
+              (tournament.participants?.length ?? 0) >= 2 && (
+                <Button
+                  onClick={() => startMutation.mutate({ id })}
+                  disabled={startMutation.isPending}
+                  variant="default"
+                >
+                  {startMutation.isPending ? "Starting..." : "Start Tournament"}
+                </Button>
+              )}
           </>
         )}
         {!isCreator && !isParticipant && (
@@ -143,6 +185,48 @@ export default function TournamentDetailPage() {
           </Button>
         )}
       </div>
+
+      {/* Bracket Section */}
+      {!!(tournament as any).started && (
+        <div className="mt-8">
+          <h2 className="mb-4 text-xl font-bold">Bracket</h2>
+          {matchesLoading ? (
+            <div>Loading bracket...</div>
+          ) : matches && matches.length > 0 ? (
+            <Bracket
+              matches={matches.map((m) => ({
+                id: m.id,
+                round: m.round,
+                position: m.position,
+                player1Id: m.player1Id ?? undefined,
+                player2Id: m.player2Id ?? undefined,
+                winnerId: m.winnerId ?? undefined,
+                status: m.status,
+              }))}
+              participants={
+                tournament.participants?.map((p) => ({
+                  id: p.user.id,
+                  name: p.user.name || "Unknown",
+                })) ?? []
+              }
+              bracketType={tournament.bracketType}
+              isCreator={isCreator}
+              onAdvanceWinner={(matchId, winnerId) => {
+                advanceWinnerMutation.mutate({
+                  id: matchId,
+                  winnerId,
+                  status: "COMPLETED",
+                });
+              }}
+            />
+          ) : (
+            <div>No matches found.</div>
+          )}
+          {bracketError && (
+            <div className="mt-2 text-red-500">{bracketError}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

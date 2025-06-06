@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { MatchStatus, Prisma } from "@prisma/client";
 
 export const tournamentRouter = createTRPCRouter({
   create: protectedProcedure
@@ -149,5 +150,74 @@ export const tournamentRouter = createTRPCRouter({
           },
         },
       });
+    }),
+
+  start: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // Only the organizer/creator can start the tournament
+      const tournament = (await ctx.db.tournament.findUnique({
+        where: { id: input.id },
+        include: {
+          participants: {
+            include: { user: true },
+          },
+        },
+      })) as Prisma.TournamentGetPayload<{
+        include: { participants: { include: { user: true } } };
+      }>;
+      if (!tournament) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tournament not found",
+        });
+      }
+      if (
+        tournament.organizerId !== ctx.session.user.id &&
+        tournament.creatorId !== ctx.session.user.id
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Only the organizer can start this tournament",
+        });
+      }
+      if (tournament.started) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Tournament already started",
+        });
+      }
+
+      // Randomize participants
+      const shuffledParticipants = [...tournament.participants].sort(
+        () => Math.random() - 0.5,
+      );
+      // Use bracketGenerator to generate matches
+      const { generateBracket } = await import("@/lib/bracketGenerator");
+      const matches = generateBracket(
+        {
+          ...tournament,
+          participants: tournament.participants.map((p) => p.user),
+        },
+        tournament.bracketType,
+      );
+
+      // Create matches in DB
+      for (const match of matches) {
+        await ctx.db.match.create({
+          data: {
+            ...match,
+            status: match.status as MatchStatus,
+          },
+        });
+      }
+
+      // Set tournament as started
+      await ctx.db.tournament.update({
+        where: { id: input.id },
+        data: { started: true },
+      });
+
+      return { success: true };
     }),
 });
