@@ -14,7 +14,7 @@ export function HeroSection() {
       ? "bg-neutral-950"
       : resolvedTheme === "light"
         ? "bg-white"
-        : "bg-white"; // fallback to white
+        : "bg-neutral-950"; // fallback to neutral-950
 
   return (
     <section
