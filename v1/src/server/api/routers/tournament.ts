@@ -108,21 +108,15 @@ export const tournamentRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      const tournament = await ctx.db.tournament.findUnique({
-        where: { id: input.id },
+      // Delete all TournamentParticipant records for this tournament
+      await ctx.db.tournamentParticipant.deleteMany({
+        where: { tournamentId: input.id },
       });
-      if (!tournament) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tournament not found",
-        });
-      }
-      if (tournament.organizerId !== ctx.session.user.id) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Only the organizer can delete this tournament",
-        });
-      }
+      // Delete all Match records for this tournament
+      await ctx.db.match.deleteMany({
+        where: { tournamentId: input.id },
+      });
+      // Now delete the Tournament
       return await ctx.db.tournament.delete({
         where: { id: input.id },
       });
@@ -201,15 +195,17 @@ export const tournamentRouter = createTRPCRouter({
         },
         tournament.bracketType,
       );
+      console.log("Bracket matches to create:", matches);
 
       // Create matches in DB
       for (const match of matches) {
-        await ctx.db.match.create({
+        const created = await ctx.db.match.create({
           data: {
             ...match,
             status: match.status as MatchStatus,
           },
         });
+        console.log("Created match:", created);
       }
 
       // Set tournament as started
