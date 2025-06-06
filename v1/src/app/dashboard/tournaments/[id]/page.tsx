@@ -144,6 +144,18 @@ export default function TournamentDetailPage() {
       <div className="flex gap-2">
         {isCreator && (
           <>
+            {/* Start Tournament Button */}
+            {!(tournament as any).started &&
+              (tournament.participants?.length ?? 0) >= 2 && (
+                <Button
+                  onClick={() => startMutation.mutate({ id })}
+                  disabled={startMutation.isPending}
+                  variant="default"
+                  className="text-foreground!"
+                >
+                  {startMutation.isPending ? "Starting..." : "Start Tournament"}
+                </Button>
+              )}
             <Button
               onClick={() => router.push(`/dashboard/tournaments/${id}/edit`)}
               className="text-foreground!"
@@ -154,20 +166,10 @@ export default function TournamentDetailPage() {
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
+              className="text-foreground!"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete Tournament"}
             </Button>
-            {/* Start Tournament Button */}
-            {!(tournament as any).started &&
-              (tournament.participants?.length ?? 0) >= 2 && (
-                <Button
-                  onClick={() => startMutation.mutate({ id })}
-                  disabled={startMutation.isPending}
-                  variant="default"
-                >
-                  {startMutation.isPending ? "Starting..." : "Start Tournament"}
-                </Button>
-              )}
           </>
         )}
         {!isCreator && !isParticipant && (
