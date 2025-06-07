@@ -1,48 +1,75 @@
 import { type Tournament, type User } from "@prisma/client";
 
+interface MatchData {
+  tournamentId: string;
+  round: number;
+  position: number;
+  player1Id: string | null;
+  player2Id: string | null;
+  status: string;
+}
+
 export function generateBracket(
   tournament: Tournament & { participants: User[] },
   bracketType: string,
-) {
+): MatchData[] {
   const participants = [...tournament.participants];
-  const matches = [];
+  const matches: MatchData[] = [];
 
-  // Single elimination bracket generation
   if (bracketType === "SINGLE_ELIMINATION") {
-    const numRounds = Math.ceil(Math.log2(participants.length));
-    let currentRound = 1;
-    let currentPosition = 1;
+    const numParticipants = participants.length;
+    if (numParticipants < 2) {
+      return matches; // Need at least 2 participants
+    }
 
-    // Create first round matches
-    while (participants.length > 1) {
-      const player1 = participants.shift();
-      const player2 = participants.length > 0 ? participants.pop() : null;
+    // Calculate the number of rounds needed
+    const numRounds = Math.ceil(Math.log2(numParticipants));
+
+    // Shuffle participants for fairness
+    for (let i = participants.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [participants[i], participants[j]] = [participants[j], participants[i]];
+    }
+
+    // Round 1: Create matches for first round
+    const firstRoundMatches = Math.ceil(numParticipants / 2);
+
+    for (let i = 0; i < firstRoundMatches; i++) {
+      const player1 = participants[i * 2] || null;
+      const player2 = participants[i * 2 + 1] || null; // may be undefined if odd number of participants
 
       matches.push({
         tournamentId: tournament.id,
-        round: currentRound,
-        position: currentPosition++,
-        player1Id: player1?.id,
-        player2Id: player2?.id,
-        status: player2 ? "SCHEDULED" : "BYE",
+        round: 1,
+        position: i + 1,
+        player1Id: player1?.id || null,
+        player2Id: player2?.id || null,
+        status: player2 ? "SCHEDULED" : "BYE", // BYE if no second player
       });
     }
 
-    // Create subsequent rounds
+    // Create subsequent rounds (empty matches to be filled as tournament progresses)
     for (let round = 2; round <= numRounds; round++) {
       const matchesInRound = Math.pow(2, numRounds - round);
-      for (let pos = 1; pos <= matchesInRound; pos++) {
+
+      for (let position = 1; position <= matchesInRound; position++) {
         matches.push({
           tournamentId: tournament.id,
           round: round,
-          position: pos,
+          position: position,
+          player1Id: null,
+          player2Id: null,
           status: "SCHEDULED",
         });
       }
     }
   }
 
-  // Add other bracket types here (DOUBLE_ELIMINATION, ROUND_ROBIN)
+  if (bracketType === "DOUBLE_ELIMINATION") {
+    // TODO: Implement double elimination bracket generation
+    // For now, fall back to single elimination
+    return generateBracket(tournament, "SINGLE_ELIMINATION");
+  }
 
   return matches;
 }

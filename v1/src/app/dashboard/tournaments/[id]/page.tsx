@@ -43,7 +43,7 @@ export default function TournamentDetailPage() {
     refetch: refetchMatches,
   } = api.match.getByTournament.useQuery(
     { tournamentId: id },
-    { enabled: !!tournament && !!(tournament as any).started },
+    { enabled: !!tournament && tournament.started === true },
   );
 
   const startMutation = api.tournament.start.useMutation({
@@ -145,7 +145,7 @@ export default function TournamentDetailPage() {
         {isCreator && (
           <>
             {/* Start Tournament Button */}
-            {!(tournament as any).started &&
+            {!tournament.started &&
               (tournament.participants?.length ?? 0) >= 2 && (
                 <Button
                   onClick={() => startMutation.mutate({ id })}
@@ -189,9 +189,14 @@ export default function TournamentDetailPage() {
       </div>
 
       {/* Bracket Section */}
-      {!!(tournament as any).started && (
+      {tournament.started && (
         <div className="mt-8">
           <h2 className="mb-4 text-xl font-bold">Bracket</h2>
+          <div className="mb-2 text-sm text-gray-500">
+            Tournament Started: {tournament.started ? "Yes" : "No"} | Matches
+            Loading: {matchesLoading ? "Yes" : "No"} | Matches Count:{" "}
+            {matches?.length || 0}
+          </div>
           {matchesLoading ? (
             <div>Loading bracket...</div>
           ) : matches && matches.length > 0 ? (
@@ -222,7 +227,13 @@ export default function TournamentDetailPage() {
               }}
             />
           ) : (
-            <div>No matches found.</div>
+            <div>
+              No matches found.
+              <div className="mt-1 text-sm text-gray-500">
+                Debug: Tournament ID: {id}, Started:{" "}
+                {tournament.started ? "true" : "false"}
+              </div>
+            </div>
           )}
           {bracketError && (
             <div className="mt-2 text-red-500">{bracketError}</div>

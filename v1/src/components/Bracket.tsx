@@ -87,6 +87,15 @@ export const Bracket: React.FC<BracketProps> = ({
     ],
   }));
 
+  // Debug logging
+  console.log("Bracket Debug:", {
+    matchesCount: matches.length,
+    participantsCount: participants.length,
+    bracketType,
+    mappedMatches: mappedMatches.slice(0, 3), // Show first 3 matches
+    rawMatches: matches.slice(0, 3), // Show first 3 raw matches
+  });
+
   const DarkTheme = createTheme({
     textColor: { main: "#FFFFFF", highlighted: "#FFFFFF", dark: "#FFFFFF" },
     matchBackground: { wonColor: "#5de464", lostColor: "#1d1d1d" },
@@ -121,6 +130,15 @@ export const Bracket: React.FC<BracketProps> = ({
     }
   };
 
+  // Handle empty matches case
+  if (matches.length === 0) {
+    return (
+      <div className="bracket min-h-[400px] w-full p-4 text-center">
+        <div className="text-gray-500">No matches available yet.</div>
+      </div>
+    );
+  }
+
   // Show winner if tournament is finished
   return (
     <div className="bracket min-h-[400px] w-full">
@@ -129,39 +147,111 @@ export const Bracket: React.FC<BracketProps> = ({
           Winner: {winner.name} 🏆
         </div>
       ) : null}
-      {bracketType === "DOUBLE_ELIMINATION" ? (
-        <DoubleEliminationBracket
-          theme={DarkTheme}
-          matches={mappedMatches}
-          onMatchClick={handleMatchClick}
-          svgWrapper={({
-            children,
-            ...props
-          }: {
-            children: React.ReactNode;
-          }) => (
-            <SVGViewer width={800} height={800} {...props}>
-              {children}
-            </SVGViewer>
-          )}
-        />
-      ) : (
-        <SingleEliminationBracket
-          theme={DarkTheme}
-          matches={mappedMatches}
-          onMatchClick={handleMatchClick}
-          svgWrapper={({
-            children,
-            ...props
-          }: {
-            children: React.ReactNode;
-          }) => (
-            <SVGViewer width={800} height={800} {...props}>
-              {children}
-            </SVGViewer>
-          )}
-        />
-      )}
+
+      {/* Simple Bracket Display - Custom Implementation */}
+      <div className="simple-bracket space-y-6">
+        {Array.from(new Set(matches.map((m) => m.round)))
+          .sort()
+          .map((round) => {
+            const roundMatches = matches.filter((m) => m.round === round);
+            return (
+              <div key={round} className="round">
+                <h3 className="mb-3 text-center text-lg font-semibold">
+                  {round === Math.max(...matches.map((m) => m.round))
+                    ? "Final"
+                    : `Round ${round}`}
+                </h3>
+                <div className="flex flex-wrap justify-center gap-4">
+                  {roundMatches.map((match) => {
+                    const player1 = participants.find(
+                      (p) => p.id === match.player1Id,
+                    );
+                    const player2 = participants.find(
+                      (p) => p.id === match.player2Id,
+                    );
+
+                    return (
+                      <div
+                        key={match.id}
+                        className={`match-card min-w-[200px] cursor-pointer rounded-lg border p-4 transition-colors ${
+                          match.status === "COMPLETED"
+                            ? "border-green-500 bg-green-900/20"
+                            : "border-gray-600 bg-gray-800 hover:border-gray-500"
+                        }`}
+                        onClick={() =>
+                          handleMatchClick({
+                            id: match.id,
+                            name: `Match ${match.round}-${match.position}`,
+                            nextMatchId: null,
+                            tournamentRoundText: `Round ${match.round}`,
+                            startTime: "",
+                            state: {
+                              status:
+                                match.status === "COMPLETED"
+                                  ? "DONE"
+                                  : "RUNNING",
+                            },
+                            participants: [
+                              {
+                                id: match.player1Id || "bye1",
+                                name: player1?.name || "BYE",
+                                isWinner: match.winnerId === match.player1Id,
+                                resultText:
+                                  match.winnerId === match.player1Id ? "W" : "",
+                              },
+                              {
+                                id: match.player2Id || "bye2",
+                                name: player2?.name || "BYE",
+                                isWinner: match.winnerId === match.player2Id,
+                                resultText:
+                                  match.winnerId === match.player2Id ? "W" : "",
+                              },
+                            ],
+                          })
+                        }
+                      >
+                        <div className="space-y-2">
+                          <div
+                            className={`player rounded p-2 ${
+                              match.winnerId === match.player1Id
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-700"
+                            }`}
+                          >
+                            <div className="font-medium">
+                              {player1?.name || "TBD"}
+                              {match.winnerId === match.player1Id && " 🏆"}
+                            </div>
+                          </div>
+                          <div className="text-center text-sm text-gray-400">
+                            vs
+                          </div>
+                          <div
+                            className={`player rounded p-2 ${
+                              match.winnerId === match.player2Id
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-700"
+                            }`}
+                          >
+                            <div className="font-medium">
+                              {player2?.name || "TBD"}
+                              {match.winnerId === match.player2Id && " 🏆"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-center text-xs text-gray-500">
+                          {match.status === "COMPLETED"
+                            ? "Completed"
+                            : "Click to set winner"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+      </div>
     </div>
   );
 };
