@@ -63,6 +63,14 @@ export default function TournamentDetailPage() {
     onError: (err) => setBracketError(err.message),
   });
 
+  const advanceAllWinnersMutation = api.match.advanceAllWinners.useMutation({
+    onSuccess: () => {
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
+  });
+
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this tournament?")) {
       deleteMutation.mutate({ id });
@@ -191,7 +199,23 @@ export default function TournamentDetailPage() {
       {/* Bracket Section */}
       {tournament.started && (
         <div className="mt-8">
-          <h2 className="mb-4 text-xl font-bold">Bracket</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold">Bracket</h2>
+            {isCreator && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  advanceAllWinnersMutation.mutate({ tournamentId: id })
+                }
+                disabled={advanceAllWinnersMutation.isPending}
+              >
+                {advanceAllWinnersMutation.isPending
+                  ? "Advancing..."
+                  : "Advance All Winners"}
+              </Button>
+            )}
+          </div>
           <div className="mb-2 text-sm text-gray-500">
             Tournament Started: {tournament.started ? "Yes" : "No"} | Matches
             Loading: {matchesLoading ? "Yes" : "No"} | Matches Count:{" "}

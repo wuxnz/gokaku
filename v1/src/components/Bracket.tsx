@@ -1,11 +1,4 @@
 import React, { useState } from "react";
-import {
-  SingleEliminationBracket,
-  DoubleEliminationBracket,
-  Match,
-  SVGViewer,
-  createTheme,
-} from "@g-loot/react-tournament-brackets";
 
 // Types for match and participant
 export interface BracketParticipant {
@@ -94,22 +87,6 @@ export const Bracket: React.FC<BracketProps> = ({
     bracketType,
     mappedMatches: mappedMatches.slice(0, 3), // Show first 3 matches
     rawMatches: matches.slice(0, 3), // Show first 3 raw matches
-  });
-
-  const DarkTheme = createTheme({
-    textColor: { main: "#FFFFFF", highlighted: "#FFFFFF", dark: "#FFFFFF" },
-    matchBackground: { wonColor: "#5de464", lostColor: "#1d1d1d" },
-    score: {
-      background: { wonColor: "#0a0a0a", lostColor: "#0a0a0a" },
-    },
-    border: {
-      color: "#0a0a0a",
-      highlightedColor: "#0a0a0a",
-    },
-    roundHeader: { backgroundColor: "#0a0a0a", fontColor: "#FFFFFF" },
-    connectorColor: "#0a0a0a",
-    connectorColorHighlight: "#0a0a0a",
-    svgBackground: "#0a0a0a",
   });
 
   // Winner selection dialog

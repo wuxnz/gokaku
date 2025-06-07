@@ -3,6 +3,41 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { db } from "../../db";
 import { broadcastMatchUpdate } from "@/server/websocket/server";
 
+// Helper function to advance winner to next round
+async function advanceWinnerToNextRound(
+  tournamentId: string,
+  currentRound: number,
+  currentPosition: number,
+  winnerId: string,
+) {
+  // Find the next round match that this winner should advance to
+  const nextRound = currentRound + 1;
+
+  // In single elimination, position in next round is calculated as:
+  // Math.ceil(currentPosition / 2)
+  const nextPosition = Math.ceil(currentPosition / 2);
+
+  // Find the next round match
+  const nextMatch = await db.match.findFirst({
+    where: {
+      tournamentId: tournamentId,
+      round: nextRound,
+      position: nextPosition,
+    },
+  });
+
+  if (nextMatch) {
+    // Determine if winner goes to player1 or player2 slot
+    // Odd positions (1, 3, 5...) go to player1, even positions (2, 4, 6...) go to player2
+    const isPlayer1Slot = currentPosition % 2 === 1;
+
+    await db.match.update({
+      where: { id: nextMatch.id },
+      data: isPlayer1Slot ? { player1Id: winnerId } : { player2Id: winnerId },
+    });
+  }
+}
+
 export const matchRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
@@ -49,10 +84,51 @@ export const matchRouter = createTRPCRouter({
         },
       });
 
+      // If match is completed and has a winner, advance to next round
+      if (input.status === "COMPLETED" && input.winnerId) {
+        await advanceWinnerToNextRound(
+          match.tournamentId,
+          match.round,
+          match.position,
+          input.winnerId,
+        );
+      }
+
       // Broadcast match update to WebSocket clients
       broadcastMatchUpdate(match);
 
       return match;
+    }),
+
+  advanceAllWinners: protectedProcedure
+    .input(z.object({ tournamentId: z.string() }))
+    .mutation(async ({ input }) => {
+      // Find all completed matches that have winners
+      const completedMatches = await db.match.findMany({
+        where: {
+          tournamentId: input.tournamentId,
+          status: "COMPLETED",
+          winnerId: { not: null },
+        },
+        orderBy: [{ round: "asc" }, { position: "asc" }],
+      });
+
+      // Advance each winner to the next round
+      for (const match of completedMatches) {
+        if (match.winnerId) {
+          await advanceWinnerToNextRound(
+            match.tournamentId,
+            match.round,
+            match.position,
+            match.winnerId,
+          );
+        }
+      }
+
+      return {
+        message: "All winners advanced",
+        processedMatches: completedMatches.length,
+      };
     }),
 
   getByTournament: protectedProcedure
