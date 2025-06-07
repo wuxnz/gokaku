@@ -24,6 +24,8 @@ interface BracketProps {
   bracketType: string;
   isCreator: boolean;
   onAdvanceWinner: (matchId: string, winnerId: string) => void;
+  onResetMatch?: (matchId: string) => void;
+  onResetRound?: (round: number) => void;
 }
 
 export const Bracket: React.FC<BracketProps> = ({
@@ -32,6 +34,8 @@ export const Bracket: React.FC<BracketProps> = ({
   bracketType,
   isCreator,
   onAdvanceWinner,
+  onResetMatch,
+  onResetRound,
 }) => {
   const [finalWinner, setFinalWinner] = useState<BracketParticipant | null>(
     null,
@@ -92,13 +96,29 @@ export const Bracket: React.FC<BracketProps> = ({
   // Winner selection dialog
   const handleMatchClick = (match: any) => {
     console.log("Match clicked:", match); // Debug log
-    if (!isCreator || match.state.status === "DONE") return;
+    if (!isCreator) return;
+
     const p1 = match.participants[0];
     const p2 = match.participants[1];
     if (!p1 || !p2) return;
+
+    // Allow changing winner even if match is completed
+    const currentWinner = match.participants.find((p: any) => p.isWinner);
+    const currentWinnerText = currentWinner
+      ? ` (Current winner: ${currentWinner.name})`
+      : "";
+
     const winnerName = window.prompt(
-      `Who won this match? Enter "1" for ${p1.name}, "2" for ${p2.name}`,
+      `Who won this match?${currentWinnerText}\nEnter "1" for ${p1.name}, "2" for ${p2.name}, or "reset" to clear the winner`,
     );
+
+    if (winnerName === "reset") {
+      if (onResetMatch) {
+        onResetMatch(match.id);
+      }
+      return;
+    }
+
     let winnerId: string | undefined;
     if (winnerName === "1") winnerId = p1.id;
     if (winnerName === "2") winnerId = p2.id;
@@ -133,11 +153,30 @@ export const Bracket: React.FC<BracketProps> = ({
             const roundMatches = matches.filter((m) => m.round === round);
             return (
               <div key={round} className="round">
-                <h3 className="mb-3 text-center text-lg font-semibold">
-                  {round === Math.max(...matches.map((m) => m.round))
-                    ? "Final"
-                    : `Round ${round}`}
-                </h3>
+                <div className="mb-3 flex items-center justify-center gap-4">
+                  <h3 className="text-lg font-semibold">
+                    {round === Math.max(...matches.map((m) => m.round))
+                      ? "Final"
+                      : `Round ${round}`}
+                  </h3>
+                  {isCreator && onResetRound && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Are you sure you want to reset all matches in Round ${round}?`,
+                          )
+                        ) {
+                          onResetRound(round);
+                        }
+                      }}
+                      className="text-xs text-red-400 underline hover:text-red-300"
+                    >
+                      Reset Round
+                    </button>
+                  )}
+                </div>
                 <div className="flex flex-wrap justify-center gap-4">
                   {roundMatches.map((match) => {
                     const player1 = participants.find(
@@ -218,9 +257,28 @@ export const Bracket: React.FC<BracketProps> = ({
                         </div>
                         <div className="mt-3 text-center text-xs text-gray-500">
                           {match.status === "COMPLETED"
-                            ? "Completed"
+                            ? "Completed (Click to change winner)"
                             : "Click to set winner"}
                         </div>
+                        {isCreator &&
+                          onResetMatch &&
+                          match.status === "COMPLETED" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (
+                                  confirm(
+                                    "Are you sure you want to reset this match?",
+                                  )
+                                ) {
+                                  onResetMatch(match.id);
+                                }
+                              }}
+                              className="mt-1 text-xs text-red-400 underline hover:text-red-300"
+                            >
+                              Reset Match
+                            </button>
+                          )}
                       </div>
                     );
                   })}

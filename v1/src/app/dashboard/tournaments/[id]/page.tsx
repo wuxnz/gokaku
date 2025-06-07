@@ -71,6 +71,30 @@ export default function TournamentDetailPage() {
     onError: (err) => setBracketError(err.message),
   });
 
+  const reshuffleBracketMutation = api.match.reshuffleBracket.useMutation({
+    onSuccess: () => {
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
+  });
+
+  const resetMatchMutation = api.match.resetMatch.useMutation({
+    onSuccess: () => {
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
+  });
+
+  const resetRoundMutation = api.match.resetRound.useMutation({
+    onSuccess: () => {
+      refetchMatches();
+      setBracketError(null);
+    },
+    onError: (err) => setBracketError(err.message),
+  });
+
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this tournament?")) {
       deleteMutation.mutate({ id });
@@ -202,18 +226,38 @@ export default function TournamentDetailPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">Bracket</h2>
             {isCreator && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  advanceAllWinnersMutation.mutate({ tournamentId: id })
-                }
-                disabled={advanceAllWinnersMutation.isPending}
-              >
-                {advanceAllWinnersMutation.isPending
-                  ? "Advancing..."
-                  : "Advance All Winners"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    advanceAllWinnersMutation.mutate({ tournamentId: id })
+                  }
+                  disabled={advanceAllWinnersMutation.isPending}
+                >
+                  {advanceAllWinnersMutation.isPending
+                    ? "Advancing..."
+                    : "Advance All Winners"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "Are you sure you want to reshuffle the entire bracket? This will reset all matches.",
+                      )
+                    ) {
+                      reshuffleBracketMutation.mutate({ tournamentId: id });
+                    }
+                  }}
+                  disabled={reshuffleBracketMutation.isPending}
+                >
+                  {reshuffleBracketMutation.isPending
+                    ? "Reshuffling..."
+                    : "Reshuffle Bracket"}
+                </Button>
+              </div>
             )}
           </div>
           <div className="mb-2 text-sm text-gray-500">
@@ -248,6 +292,12 @@ export default function TournamentDetailPage() {
                   winnerId,
                   status: "COMPLETED",
                 });
+              }}
+              onResetMatch={(matchId) => {
+                resetMatchMutation.mutate({ matchId });
+              }}
+              onResetRound={(round) => {
+                resetRoundMutation.mutate({ tournamentId: id, round });
               }}
             />
           ) : (
