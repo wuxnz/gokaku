@@ -18,7 +18,7 @@ export function HeroSection() {
 
   return (
     <section
-      className={`relative flex h-[calc(100vh-4rem)] w-full items-center justify-center rounded-md antialiased transition-colors duration-500 ${bgClass}`}
+      className={`relative flex h-[calc(100vh-4rem)] w-full items-center justify-center rounded-md antialiased transition-colors duration-500`} // ${bgClass}`}
     >
       <div className="z-10 container mx-auto px-4 text-center">
         <div className="mx-auto max-w-3xl">
@@ -42,7 +42,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      <BackgroundBeams />
+      {/* <BackgroundBeams /> */}
     </section>
   );
 }

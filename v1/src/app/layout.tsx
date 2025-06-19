@@ -8,6 +8,7 @@ import { NotificationProvider } from "@/lib/notifications/NotificationContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
+import { VideoBackground } from "@/components/VideoBackground";
 
 export const metadata: Metadata = {
   title: "TourneyPro",
@@ -34,7 +35,8 @@ export default function RootLayout({
                 defaultTheme="system"
                 enableSystem
               >
-                <div className="flex min-h-full flex-col">
+                <VideoBackground />
+                <div className="relative flex min-h-full flex-col">
                   <Navbar />
                   <main className="flex flex-1 flex-col">{children}</main>
                 </div>
