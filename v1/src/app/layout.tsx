@@ -11,8 +11,9 @@ import { ThemeProvider } from "next-themes";
 import { VideoBackground } from "@/components/VideoBackground";
 
 export const metadata: Metadata = {
-  title: "TourneyPro",
-  description: "Tournament management system",
+  title: "Top Deck Circuit",
+  description:
+    "Top Deck Circuit - The best way to manage your Yu-Gi-Oh! tournaments",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

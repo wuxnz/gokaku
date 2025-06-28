@@ -6,7 +6,7 @@ const testimonials = [
     name: "Alex Johnson",
     role: "Tournament Organizer",
     content:
-      "TourneyPro has completely transformed how we run our esports events. Setup is a breeze and participants love the real-time updates!",
+      "Top Deck Circuit has completely transformed how we run our esports events. Setup is a breeze and participants love the real-time updates!",
     avatar: "/avatars/01.png",
     initials: "AJ",
   },
@@ -14,7 +14,7 @@ const testimonials = [
     name: "Sarah Williams",
     role: "Professional Gamer",
     content:
-      "I've competed in over 50 tournaments using TourneyPro. The bracket system is flawless and prize distribution is always smooth.",
+      "I've competed in over 50 tournaments using Top Deck Circuit. The bracket system is flawless and prize distribution is always smooth.",
     avatar: "/avatars/02.png",
     initials: "SW",
   },
@@ -22,7 +22,7 @@ const testimonials = [
     name: "Michael Chen",
     role: "Community Manager",
     content:
-      "Our community engagement has doubled since switching to TourneyPro. The notification system keeps everyone informed and excited.",
+      "Our community engagement has doubled since switching to Top Deck Circuit. The notification system keeps everyone informed and excited.",
     avatar: "/avatars/03.png",
     initials: "MC",
   },
@@ -37,7 +37,8 @@ export function TestimonialsSection() {
             What Our Users Say
           </h2>
           <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gray-300">
-            Hear from tournament organizers and competitors who use TourneyPro
+            Hear from tournament organizers and competitors who use Top Deck
+            Circuit
           </p>
         </div>
 

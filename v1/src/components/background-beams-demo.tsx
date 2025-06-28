@@ -11,10 +11,10 @@ export default function BackgroundBeamsDemo() {
         </h1>
         <p></p>
         <p className="relative z-10 mx-auto my-2 max-w-lg text-center text-sm text-neutral-500">
-          Welcome to TourneyPro, the ultimate tournament platform. We provide
-          reliable, scalable, and customizable tournament solutions. Whether
-          you're organizing esports, sports, or academic competitions,
-          TourneyPro has got you covered.
+          Welcome to Top Deck Circuit, the ultimate tournament platform. We
+          provide reliable, scalable, and customizable tournament solutions.
+          Whether you're organizing esports, sports, or academic competitions,
+          Top Deck Circuit has got you covered.
         </p>
         <input
           type="text"

@@ -20,7 +20,7 @@ export function Navbar() {
     <nav className="flex items-center justify-between border-b p-4">
       <div className="flex items-center space-x-4">
         <Link href="/" className="text-lg font-bold">
-          TourneyPro
+          TDC
         </Link>
         {session?.user && (
           <DropdownMenu>

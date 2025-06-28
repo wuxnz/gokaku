@@ -9,7 +9,7 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <h3 className="mb-4 text-xl font-bold">TourneyPro</h3>
+            <h3 className="mb-4 text-xl font-bold">Top Deck Circuit</h3>
             <p className="text-gray-400">
               The ultimate platform for organizing and competing in tournaments
             </p>
@@ -96,7 +96,7 @@ export function Footer() {
         </div>
       </div>
       <div className="mt-12 border-t border-gray-800 py-6 text-center text-gray-400">
-        <p>&copy; {currentYear} TourneyPro. All rights reserved.</p>
+        <p>&copy; {currentYear} Top Deck Circuit. All rights reserved.</p>
       </div>
     </footer>
   );
